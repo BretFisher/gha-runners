@@ -1,7 +1,9 @@
 #!/usr/bin/env terraform
 
 provider "aws" {
-  region = var.region
+  region = var.aws_region
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
 }
 
 data "aws_ami" "ubuntu" {
@@ -23,17 +25,22 @@ data "aws_ami" "ubuntu" {
 data "template_file" "user_data" {
   template = "${file("${path.module}/user-data.sh")}"
   vars = {
-    github-pat = var.github_pat
+    github-token         = var.github_token
+    github-runner-labels = var.github_runner_labels
+    github-repo          = var.github_repo
+    github-org           = var.github_org
   }
 }
 
 resource "aws_launch_configuration" "as_conf" {
   name_prefix     = "terraform-gha-runners-"
   image_id        = data.aws_ami.ubuntu.id
-  instance_type   = var.instance_type
-  key_name        = var.key_name
-  security_groups = var.security_groups
+  instance_type   = var.aws_ec2_instance_type
+  key_name        = var.aws_ec2_key_name
+  security_groups = var.aws_security_groups
   user_data       = data.template_file.user_data.rendered
+  spot_price      = var.aws_ec2_spot_price
+
 
   lifecycle {
     create_before_destroy = true
@@ -43,9 +50,9 @@ resource "aws_launch_configuration" "as_conf" {
 resource "aws_autoscaling_group" "as_group" {
   name                 = "terraform-asg-gha-runners"
   launch_configuration = aws_launch_configuration.as_conf.name
-  min_size             = 2
-  max_size             = 2
-  availability_zones   = var.availability_zones
+  min_size             = var.aws_asg_min_size
+  max_size             = var.aws_asg_max_size
+  availability_zones   = var.aws_availability_zones
 
   lifecycle {
     create_before_destroy = true
