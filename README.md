@@ -1,6 +1,6 @@
-# Simple Terra
+# GitHub Actions self-hosted runners via AWS Auto Scaling Group
 
-Terraform to create GitHub Action self-hosted runners in EC2 using a Launch Configuration.
+Terraform to create GitHub Actions self-hosted runners in EC2 using a Launch Configuration to create a ASG.
 
 There are other projects (listed below) for creating self-hosted runners that dynamically scale based on job queues and other advanced setups. My example is only meant to be a way for you to create a fixed set of runners.
 
@@ -26,9 +26,9 @@ There are other projects (listed below) for creating self-hosted runners that dy
 
 ## Usage
 
-1. Modify the values in variables.tf to your liking.
-1. This project defaults to runners connecting to a single repo. To change to a full org, modify the values in `variables.tf` and swap the docker command in `user-data.sh`.
-1. Create a `terraform.tfvars` file in the root of this project with these variables defined. If you forked this repo, `.gitignore` prevents committing any `tfvars` files:
+1. Modify the values in `variables.tf` to your liking.
+1. This project defaults to runners connecting to a single repo. To change to a full org, modify the values in `variables.tf` and swap the docker command in `user-data.tpl`.
+1. Create a `terraform.tfvars` file in the root of this project with these variables defined. If you forked this repo, `.gitignore` prevents committing any `tfvars` files for safety:
 
     ```terraform
     # terraform.tfvars file for secrets
