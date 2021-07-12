@@ -12,10 +12,10 @@ curl -sSL https://get.docker.com/ | sh
 #
 docker run -d --restart always --name github-runner \
   -e RUNNER_SCOPE="repo" \
-  -e REPO_URL="https://github.com/${github-repo}" \
-  -e ACCESS_TOKEN="${github-token}" \
+  -e REPO_URL="https://github.com/${github_repo}" \
+  -e ACCESS_TOKEN="${github_token}" \
   -e RUNNER_WORKDIR="/tmp/github-runner" \
-  -e LABELS="${github-runner-labels}" \
+  -e LABELS="${github_runner_labels}" \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /tmp/github-runner:/tmp/github-runner \
   myoung34/github-runner:latest
@@ -28,10 +28,10 @@ docker run -d --restart always --name github-runner \
 #
 # docker run -d --restart always --name github-runner \
 #   -e RUNNER_SCOPE="org" \
-#   -e ORG_NAME="${github-org}" \
-#   -e ACCESS_TOKEN="${github-token}" \
+#   -e ORG_NAME="${github_org}" \
+#   -e ACCESS_TOKEN="${github_token}" \
 #   -e RUNNER_WORKDIR="/tmp/github-runner" \
-#   -e LABELS="${github-runner-labels}" \
+#   -e LABELS="${github_runner_labels}" \
 #   -v /var/run/docker.sock:/var/run/docker.sock \
 #   -v /tmp/github-runner:/tmp/github-runner \
 #   myoung34/github-runner:latest

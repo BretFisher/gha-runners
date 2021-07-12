@@ -12,6 +12,7 @@ data "aws_ami" "ubuntu" {
   filter {
     name   = "name"
     values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+    # values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*"] # for arm64 instances
   }
 
   filter {
@@ -22,37 +23,39 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 
-data "template_file" "user_data" {
-  template = "${file("${path.module}/user-data.sh")}"
-  vars = {
-    github-token         = var.github_token
-    github-runner-labels = var.github_runner_labels
-    github-repo          = var.github_repo
-    github-org           = var.github_org
-  }
-}
-
 resource "aws_launch_configuration" "as_conf" {
-  name_prefix     = "terraform-gha-runners-"
+  name_prefix     = "tf-gha-runners-"
   image_id        = data.aws_ami.ubuntu.id
   instance_type   = var.aws_ec2_instance_type
   key_name        = var.aws_ec2_key_name
   security_groups = var.aws_security_groups
-  user_data       = data.template_file.user_data.rendered
+  # user_data       = data.template_file.user_data.rendered
   spot_price      = var.aws_ec2_spot_price
-
+  user_data       = templatefile("${path.module}/user-data.tpl", {
+    github_token         = var.github_token, 
+    github_runner_labels = var.github_runner_labels, 
+    github_repo          = var.github_repo, 
+    github_org           = var.github_org
+  })
 
   lifecycle {
     create_before_destroy = true
   }
+  
+  # we shouldn't need the metadata service
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
 }
 
 resource "aws_autoscaling_group" "as_group" {
-  name                 = "terraform-asg-gha-runners"
+  name_prefix          = "tf-asg-gha-runners-"
   launch_configuration = aws_launch_configuration.as_conf.name
   min_size             = var.aws_asg_min_size
   max_size             = var.aws_asg_max_size
   availability_zones   = var.aws_availability_zones
+  # max_instance_lifetime = 604800 # one week in seconds
 
   lifecycle {
     create_before_destroy = true
@@ -61,10 +64,9 @@ resource "aws_autoscaling_group" "as_group" {
   instance_refresh {
     strategy = "Rolling"
     preferences {
-      // how many instances to keep running while terminating the rest
+      # how many instances to keep running while terminating the rest
       min_healthy_percentage = 50
     }
-    // Depending the triggers you wish to configure, you may not want to include this
     triggers = ["tag"]
   }
 }

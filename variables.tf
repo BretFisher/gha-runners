@@ -14,7 +14,8 @@ variable "aws_ec2_instance_type" {
   type        = string
   # .medium only has 4GB RAM. Consider .large or .xlarge for more.
   # GitHub-hosted runners would be similar to t3a.large (8GB RAM)
-  default     = "t3a.medium" #.0376 hourly, $27.45 monthly
+  default     = "t3a.medium" #.0113 spot hourly, $8.25 spot monthly
+  # default     = "t4g.medium" #.01 spot hourly, $7.37 spot monthly
 
 }
 
@@ -27,15 +28,17 @@ variable "aws_ec2_spot_price" {
 variable "aws_ec2_key_name" {
   description = "Name of an existing EC2 KeyPair to enable SSH access to the instances"
   type        = string
-  default     = "bret-mac-2021"
+  default     = "your-key-name"
 }
 
 variable "aws_security_groups" {
   description = "A list of one or more existing Security Groups to place the instances in"
   type        = list(string)
-  default     = ["sg-0fdb50a80a315583f"]
+  default     = ["sg-0f0f0f0f0f0f0f0f"]
 }
 
+# currently these two values have to be the same. auto-scaling isn't supported yet.
+# In this project, the ASG is just used for rolling updates of the runners when terraform is changed.
 variable "aws_asg_min_size" {
   description = "Minimum size of the Auto Scaling Group"
   type        = number
@@ -72,14 +75,15 @@ variable "github_org" {
   default     = "org-name"
 }
 
+# Optonal. labels like Linux,X64, and self-hosted are already applied. This is for additional labels.
 variable "github_runner_labels" {
-  description = "A list of comma-delimited labels to apply to GitHub-hosted runners"
+  description = "A list of comma-delimited custom labels to apply to GitHub-hosted runners"
   type        = string
-  default     = "docker,aws"
+  default     = ""
 }
 
 variable "github_repo" {
   description = "GitHub repo to connect the runners to. Only used if user-data.sh is set to repo mode"
   type        = string
-  default     = "bretfisher/gha-runners"
+  default     = "username/repo"
 }
