@@ -48,7 +48,7 @@ jobs:
       ################################
       # https://github.com/marketplace/actions/super-linter
       - name: Lint Code Base
-        uses: github/super-linter@v4.6.1
+        uses: github/super-linter@v4.7.3
         env:
           # only lint changed files in each commit/PR
           VALIDATE_ALL_CODEBASE: false
